@@ -22,3 +22,7 @@ dev = [
     "mypy>=1.19.1",
     "pre-commit>=4.5.1",
 ]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D"]

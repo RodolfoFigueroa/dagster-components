@@ -1,6 +1,9 @@
-from typing import Sequence, Literal
-from dagster_components.types import G
+from collections.abc import Sequence
+from typing import Literal
+
 import pandas as pd
+
+from dagster_components.types import G
 
 
 def cast_all_columns_to_numeric(

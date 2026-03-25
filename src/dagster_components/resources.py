@@ -1,8 +1,9 @@
+from collections.abc import Generator
+from contextlib import contextmanager
+
 import dagster as dg
 import sqlalchemy
 from pydantic import PrivateAttr
-from typing import Generator
-from contextlib import contextmanager
 
 
 class PostGISResource(dg.ConfigurableResource):
