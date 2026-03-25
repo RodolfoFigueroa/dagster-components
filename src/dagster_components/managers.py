@@ -9,7 +9,7 @@ from pydantic import PrivateAttr
 from dagster_components.types import DFType
 
 
-class DataFrameBasePostgresManager(dg.ConfigurableIOManager, Generic[DFType]):
+class _DataFrameBasePostgresManager(dg.ConfigurableIOManager, Generic[DFType]):
     host: str
     port: str
     user: str
@@ -85,7 +85,7 @@ class DataFrameBasePostgresManager(dg.ConfigurableIOManager, Generic[DFType]):
             return self.load_table(table, cols_str, conn)
 
 
-class DataFramePostgresManager(DataFrameBasePostgresManager[pd.DataFrame]):
+class DataFramePostgresManager(_DataFrameBasePostgresManager[pd.DataFrame]):
     def write_table(
         self,
         df: pd.DataFrame,
@@ -103,7 +103,7 @@ class DataFramePostgresManager(DataFrameBasePostgresManager[pd.DataFrame]):
         return pd.read_sql(f"SELECT {cols_str} FROM {table_name}", conn)  # noqa: S608
 
 
-class GeoDataFramePostGISManager(DataFrameBasePostgresManager[gpd.GeoDataFrame]):
+class GeoDataFramePostGISManager(_DataFrameBasePostgresManager[gpd.GeoDataFrame]):
     def write_table(
         self,
         df: gpd.GeoDataFrame,
