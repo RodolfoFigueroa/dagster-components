@@ -9,6 +9,8 @@ class GeoDataFramePostGISManager(dg.ConfigurableIOManager):
     db: str
     def setup_for_execution(self, context: dg.InitResourceContext) -> None: ...
     def handle_output(
-        self, context: dg.OutputContext, obj: gpd.GeoDataFrame,
+        self,
+        context: dg.OutputContext,
+        obj: gpd.GeoDataFrame,
     ) -> None: ...
     def load_input(self, context: dg.InputContext) -> gpd.GeoDataFrame: ...

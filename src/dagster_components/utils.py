@@ -3,15 +3,15 @@ from typing import Literal
 
 import pandas as pd
 
-from dagster_components.types import G
+from dagster_components.types import BoundDFType
 
 
 def cast_all_columns_to_numeric(
-    df: G,
+    df: BoundDFType,
     ignore: Sequence[str] | None = None,
     *,
     errors: Literal["coerce", "raise"] = "raise",
-) -> G:
+) -> BoundDFType:
     """Casts all columns in a DataFrame to numeric, optionally skipping some.
 
     Applies ``pd.to_numeric`` with ``errors='coerce'`` to every column not in

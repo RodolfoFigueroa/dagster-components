@@ -1,10 +1,15 @@
+from typing import Generic
+
 import dagster as dg
 import geopandas as gpd
+import pandas as pd
 import sqlalchemy
 from pydantic import PrivateAttr
 
+from dagster_components.types import DFType
 
-class GeoDataFramePostGISManager(dg.ConfigurableIOManager):
+
+class DataFrameBasePostgresManager(dg.ConfigurableIOManager, Generic[DFType]):
     host: str
     port: str
     user: str
@@ -13,22 +18,44 @@ class GeoDataFramePostGISManager(dg.ConfigurableIOManager):
 
     _engine: sqlalchemy.engine.Engine = PrivateAttr()
 
+    def write_table(
+        self,
+        df: DFType,
+        table_name: str,
+        conn: sqlalchemy.Connection,
+    ) -> None:
+        msg = "write_table must be implemented by subclasses"
+        raise NotImplementedError(msg)
+
+    def load_table(
+        self,
+        table_name: str,
+        cols_str: str,
+        conn: sqlalchemy.Connection,
+    ) -> DFType:
+        msg = "load_table must be implemented by subclasses"
+        raise NotImplementedError(msg)
+
     def setup_for_execution(self, context: dg.InitResourceContext) -> None:  # noqa: ARG002
         self._engine = sqlalchemy.create_engine(
             f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}?client_encoding=utf8",
         )
 
-    def handle_output(self, context: dg.OutputContext, obj: gpd.GeoDataFrame) -> None:
+    def handle_output(
+        self,
+        context: dg.OutputContext,
+        obj: DFType,
+    ) -> None:
         table = context.definition_metadata["table_name"]
 
         with self._engine.connect() as conn:
-            obj.to_postgis(table, conn, if_exists="replace")
+            self.write_table(obj, table, conn)
 
             if "primary_key" in context.definition_metadata:
                 primary_key = context.definition_metadata["primary_key"]
 
                 if primary_key not in obj.columns:
-                    err = f"Primary key {primary_key} not found in GeoDataFrame columns"
+                    err = f"Primary key {primary_key} not found in DataFrame columns"
                     raise ValueError(err)
 
                 conn.execute(
@@ -39,10 +66,10 @@ class GeoDataFramePostGISManager(dg.ConfigurableIOManager):
 
             conn.commit()
 
-    def load_input(self, context: dg.InputContext) -> gpd.GeoDataFrame:
+    def load_input(self, context: dg.InputContext) -> DFType:
         upstream_output = context.upstream_output
         if upstream_output is None:
-            err = "No upstream output found for GeoDataFramePostGISManager"
+            err = "No upstream output found."
             raise ValueError(err)
 
         table = upstream_output.definition_metadata["table_name"]
@@ -50,17 +77,51 @@ class GeoDataFramePostGISManager(dg.ConfigurableIOManager):
         in_metadata = context.definition_metadata
         if "columns" in in_metadata:
             wanted_cols = in_metadata["columns"]
-            if "geometry" not in wanted_cols:
-                wanted_cols.append("geometry")
             cols_str = ", ".join(wanted_cols)
         else:
             cols_str = "*"
 
         with self._engine.connect() as conn:
-            return gpd.read_postgis(
-                f"""
-                SELECT {cols_str} FROM {table}
+            return self.load_table(table, cols_str, conn)
+
+
+class DataFramePostgresManager(DataFrameBasePostgresManager[pd.DataFrame]):
+    def write_table(
+        self,
+        df: pd.DataFrame,
+        table_name: str,
+        conn: sqlalchemy.Connection,
+    ) -> None:
+        df.to_sql(table_name, conn, if_exists="replace", index=False)
+
+    def load_table(
+        self,
+        table_name: str,
+        cols_str: str,
+        conn: sqlalchemy.Connection,
+    ) -> pd.DataFrame:
+        return pd.read_sql(f"SELECT {cols_str} FROM {table_name}", conn)  # noqa: S608
+
+
+class GeoDataFramePostGISManager(DataFrameBasePostgresManager[gpd.GeoDataFrame]):
+    def write_table(
+        self,
+        df: gpd.GeoDataFrame,
+        table_name: str,
+        conn: sqlalchemy.Connection,
+    ) -> None:
+        pass
+
+    def load_table(
+        self,
+        table_name: str,
+        cols_str: str,
+        conn: sqlalchemy.Connection,
+    ) -> gpd.GeoDataFrame:
+        return gpd.read_postgis(
+            f"""
+                SELECT {cols_str} FROM {table_name}
                 """,  # noqa: S608
-                conn,
-                geom_col="geometry",
-            )
+            conn,
+            geom_col="geometry",
+        )
