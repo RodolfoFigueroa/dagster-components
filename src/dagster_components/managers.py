@@ -1,15 +1,19 @@
-from typing import Generic
+from typing import Any, Generic
 
 import dagster as dg
 import geopandas as gpd
 import pandas as pd
 import sqlalchemy
+from dagster._config.pythonic_config.resource import TResValue
 from pydantic import PrivateAttr
 
 from dagster_components.types import DFType
 
 
-class _DataFrameBasePostgresManager(dg.ConfigurableIOManager, Generic[DFType]):
+class _DataFrameBasePostgresManager(
+    dg.ConfigurableIOManager,
+    Generic[DFType, TResValue],
+):
     host: str
     port: str
     user: str
@@ -85,7 +89,7 @@ class _DataFrameBasePostgresManager(dg.ConfigurableIOManager, Generic[DFType]):
             return self.load_table(table, cols_str, conn)
 
 
-class DataFramePostgresManager(_DataFrameBasePostgresManager[pd.DataFrame]):
+class DataFramePostgresManager(_DataFrameBasePostgresManager[pd.DataFrame, Any]):
     def write_table(
         self,
         df: pd.DataFrame,
@@ -103,7 +107,7 @@ class DataFramePostgresManager(_DataFrameBasePostgresManager[pd.DataFrame]):
         return pd.read_sql(f"SELECT {cols_str} FROM {table_name}", conn)  # noqa: S608
 
 
-class GeoDataFramePostGISManager(_DataFrameBasePostgresManager[gpd.GeoDataFrame]):
+class GeoDataFramePostGISManager(_DataFrameBasePostgresManager[gpd.GeoDataFrame, Any]):
     def write_table(
         self,
         df: gpd.GeoDataFrame,
