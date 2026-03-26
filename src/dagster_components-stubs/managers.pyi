@@ -9,7 +9,7 @@ from dagster._config.pythonic_config.resource import TResValue as TResValue
 from dagster_components.types import DFType as DFType
 
 class _DataFrameBasePostgresManager(
-    dg.ConfigurableIOManager, Generic[DFType, TResValue],
+    dg.ConfigurableIOManager, Generic[DFType, TResValue]
 ):
     host: str
     port: str
@@ -17,10 +17,10 @@ class _DataFrameBasePostgresManager(
     password: str
     db: str
     def write_table(
-        self, df: DFType, table_name: str, conn: sqlalchemy.Connection,
+        self, df: DFType, table_name: str, conn: sqlalchemy.Connection
     ) -> None: ...
     def load_table(
-        self, table_name: str, cols_str: str, conn: sqlalchemy.Connection,
+        self, table_name: str, cols_str: str, conn: sqlalchemy.Connection
     ) -> DFType: ...
     def setup_for_execution(self, context: dg.InitResourceContext) -> None: ...
     def handle_output(self, context: dg.OutputContext, obj: DFType) -> None: ...
@@ -28,16 +28,16 @@ class _DataFrameBasePostgresManager(
 
 class DataFramePostgresManager(_DataFrameBasePostgresManager[pd.DataFrame, Any]):
     def write_table(
-        self, df: pd.DataFrame, table_name: str, conn: sqlalchemy.Connection,
+        self, df: pd.DataFrame, table_name: str, conn: sqlalchemy.Connection
     ) -> None: ...
     def load_table(
-        self, table_name: str, cols_str: str, conn: sqlalchemy.Connection,
+        self, table_name: str, cols_str: str, conn: sqlalchemy.Connection
     ) -> pd.DataFrame: ...
 
 class GeoDataFramePostGISManager(_DataFrameBasePostgresManager[gpd.GeoDataFrame, Any]):
     def write_table(
-        self, df: gpd.GeoDataFrame, table_name: str, conn: sqlalchemy.Connection,
+        self, df: gpd.GeoDataFrame, table_name: str, conn: sqlalchemy.Connection
     ) -> None: ...
     def load_table(
-        self, table_name: str, cols_str: str, conn: sqlalchemy.Connection,
+        self, table_name: str, cols_str: str, conn: sqlalchemy.Connection
     ) -> gpd.GeoDataFrame: ...

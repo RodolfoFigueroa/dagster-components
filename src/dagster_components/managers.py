@@ -114,7 +114,7 @@ class GeoDataFramePostGISManager(_DataFrameBasePostgresManager[gpd.GeoDataFrame,
         table_name: str,
         conn: sqlalchemy.Connection,
     ) -> None:
-        pass
+        df.to_postgis(table_name, conn, if_exists="replace")
 
     def load_table(
         self,
@@ -123,9 +123,7 @@ class GeoDataFramePostGISManager(_DataFrameBasePostgresManager[gpd.GeoDataFrame,
         conn: sqlalchemy.Connection,
     ) -> gpd.GeoDataFrame:
         return gpd.read_postgis(
-            f"""
-                SELECT {cols_str} FROM {table_name}
-                """,  # noqa: S608
+            f"SELECT {cols_str} FROM {table_name}",  # noqa: S608
             conn,
             geom_col="geometry",
         )
