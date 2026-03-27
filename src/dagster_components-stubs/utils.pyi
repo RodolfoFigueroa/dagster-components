@@ -8,4 +8,5 @@ def cast_all_columns_to_numeric(
     ignore: Sequence[str] | None = None,
     *,
     errors: Literal["coerce", "raise"] = "raise",
+    make_valid_int: bool = False,
 ) -> BoundDFType: ...
