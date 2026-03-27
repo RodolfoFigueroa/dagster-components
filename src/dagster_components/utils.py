@@ -17,6 +17,7 @@ def cast_all_columns_to_numeric(
     Convert all columns in a DataFrame to numeric types.
     This function attempts to cast all columns in a DataFrame to numeric types,
     with options to ignore specific columns and handle conversion errors.
+
     Parameters
     ----------
     df : BoundDFType
@@ -30,16 +31,19 @@ def cast_all_columns_to_numeric(
         If True, convert columns with all integer values (no decimals)
         to int type. Only applied if all values are non-null and are
         whole numbers.
+
     Returns
     -------
     BoundDFType
         A new DataFrame with converted columns. The original DataFrame
         is not modified.
+
     Notes
     -----
     - A copy of the input DataFrame is created before modifications.
     - If make_valid_int is True, columns are converted to int only if
       they contain no missing values and all numeric values are whole numbers.
+
     Examples
     --------
     >>> df = pd.DataFrame({'A': ['1', '2', '3'], 'B': ['1.5', '2.5', '3.5']})
@@ -71,3 +75,6 @@ def cast_all_columns_to_numeric(
             df[col] = new_col
 
     return df
+
+
+cast_all_columns_to_numeric
