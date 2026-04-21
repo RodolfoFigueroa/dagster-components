@@ -1,12 +1,10 @@
 from collections.abc import Generator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    import dagster as dg
-    import sqlalchemy
+import dagster as dg
+import sqlalchemy
 
-class PostGISResource(dg.ConfigurableResource):
+class PostgresResource(dg.ConfigurableResource):
     host: str
     port: str
     user: str

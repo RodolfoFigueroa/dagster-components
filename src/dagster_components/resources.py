@@ -6,9 +6,9 @@ import sqlalchemy
 from pydantic import PrivateAttr
 
 
-class PostGISResource(dg.ConfigurableResource):
-    """PostGIS database resource for Dagster.
-    This resource provides a configured connection to a PostGIS-enabled PostgreSQL database.
+class PostgresResource(dg.ConfigurableResource):
+    """PostgreSQL database resource for Dagster.
+    This resource provides a configured connection to a PostgreSQL database.
     It manages SQLAlchemy engine creation and connection lifecycle.
 
     Attributes:

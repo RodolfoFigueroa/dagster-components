@@ -5,8 +5,8 @@ import geopandas as gpd
 import pandas as pd
 import sqlalchemy
 from dagster._config.pythonic_config.resource import TResValue
-from pydantic import PrivateAttr
 
+from dagster_components.resources import PostgresResource
 from dagster_components.types import DFType
 
 
@@ -14,18 +14,7 @@ class _DataFrameBasePostgresManager(
     dg.ConfigurableIOManager,
     Generic[DFType, TResValue],
 ):
-    host: str
-    port: str
-    user: str
-    password: str
-    db: str
-
-    _engine: sqlalchemy.engine.Engine = PrivateAttr()
-
-    def setup_for_execution(self, context: dg.InitResourceContext) -> None:  # noqa: ARG002
-        self._engine = sqlalchemy.create_engine(
-            f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}?client_encoding=utf8",
-        )
+    postgres_resource: dg.ResourceDependency[PostgresResource]
 
     def write_table(
         self,
@@ -52,7 +41,7 @@ class _DataFrameBasePostgresManager(
     ) -> None:
         table = context.definition_metadata["table_name"]
 
-        with self._engine.connect() as conn:
+        with self.postgres_resource.connect() as conn:
             self.write_table(obj, table, conn)
 
             if "primary_key" in context.definition_metadata:
@@ -107,7 +96,7 @@ class _DataFrameBasePostgresManager(
         else:
             cols_str = "*"
 
-        with self._engine.connect() as conn:
+        with self.postgres_resource.connect() as conn:
             return self.load_table(table, cols_str, conn)
 
 

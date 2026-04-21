@@ -6,17 +6,13 @@ import pandas as pd
 import sqlalchemy
 from dagster._config.pythonic_config.resource import TResValue as TResValue
 
+from dagster_components.resources import PostgresResource as PostgresResource
 from dagster_components.types import DFType as DFType
 
 class _DataFrameBasePostgresManager(
     dg.ConfigurableIOManager, Generic[DFType, TResValue]
 ):
-    host: str
-    port: str
-    user: str
-    password: str
-    db: str
-    def setup_for_execution(self, context: dg.InitResourceContext) -> None: ...
+    postgres_resource: dg.ResourceDependency[PostgresResource]
     def write_table(
         self, df: DFType, table_name: str, conn: sqlalchemy.Connection
     ) -> None: ...
