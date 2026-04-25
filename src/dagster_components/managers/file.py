@@ -55,13 +55,7 @@ class _BaseFileManager(dg.ConfigurableIOManager):
 
         Returns:
             The resolved file path including the configured extension.
-
-        Raises:
-            ValueError: If ``asset_dir`` does not exist or is not a directory.
         """
-        if not asset_dir.is_dir():
-            err = f"Asset directory {asset_dir} does not exist or is not a directory."
-            raise ValueError(err)
 
         segments = partition_key.split("|")
         fpath = asset_dir / "/".join(segments)
