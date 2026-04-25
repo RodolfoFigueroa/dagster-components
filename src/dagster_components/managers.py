@@ -21,6 +21,9 @@ class _DataFrameBasePostgresManager(
     Subclasses must implement ``write_table`` and ``load_table`` to define how data is
     serialized and deserialized for a specific DataFrame type.
 
+    Args:
+        postgres_resource: A Dagster resource dependency providing a PostgreSQL connection.
+
     Attributes:
         postgres_resource: A Dagster resource dependency providing a PostgreSQL connection.
     """
@@ -177,6 +180,9 @@ class DataFramePostgresManager(_DataFrameBasePostgresManager[pd.DataFrame, Any])
     Uses pandas ``to_sql`` and ``read_sql`` for serialization and deserialization.
     Inherits output and input handling (including primary and foreign key constraints)
     from ``_DataFrameBasePostgresManager``.
+
+    Args:
+        postgres_resource: A Dagster resource dependency providing a PostgreSQL connection.
     """
 
     def write_table(
@@ -221,6 +227,9 @@ class GeoDataFramePostGISManager(_DataFrameBasePostgresManager[gpd.GeoDataFrame,
     Uses geopandas ``to_postgis`` and ``read_postgis`` for serialization and
     deserialization. Assumes a ``geometry`` column is present for spatial data.
     Inherits output and input handling from ``_DataFrameBasePostgresManager``.
+
+    Args:
+        postgres_resource: A Dagster resource dependency providing a PostgreSQL connection.
     """
 
     def write_table(
@@ -268,6 +277,9 @@ class GeoDataFramePostGISManager(_DataFrameBasePostgresManager[gpd.GeoDataFrame,
 class PathResource(dg.ConfigurableResource):
     """Dagster resource providing a base output directory path for file-based IO managers.
 
+    Args:
+        out_path: The root directory path where assets are stored.
+
     Attributes:
         out_path: The root directory path where assets are stored.
     """
@@ -280,6 +292,11 @@ class _DataFrameBaseFileManager(dg.ConfigurableIOManager):
 
     Handles path resolution for both partitioned and non-partitioned assets.
     Subclasses must implement ``handle_output`` and ``load_input``.
+
+    Args:
+        path_resource: A resource dependency providing the root output directory path.
+        extension: The file extension to use. One of ``.parquet``, ``.csv``, ``.gpkg``,
+            or ``.geoparquet``.
 
     Attributes:
         path_resource: A resource dependency providing the root output directory path.
@@ -489,6 +506,10 @@ class DataFrameFileManager(_DataFrameBaseFileManager):
 
     Supports ``.parquet`` and ``.csv`` file formats. For partitioned assets, loading
     returns a mapping of partition key to DataFrame.
+
+    Args:
+        path_resource: A resource dependency providing the root output directory path.
+        extension: The file extension to use. Must be ``.parquet`` or ``.csv``.
     """
 
     def handle_output(self, context: dg.OutputContext, obj: pd.DataFrame) -> None:
@@ -550,6 +571,10 @@ class GeoDataFrameFileManager(_DataFrameBaseFileManager):
 
     Supports ``.gpkg`` (GeoPackage) and ``.geoparquet`` file formats. For partitioned
     assets, loading returns a mapping of partition key to GeoDataFrame.
+
+    Args:
+        path_resource: A resource dependency providing the root output directory path.
+        extension: The file extension to use. Must be ``.gpkg`` or ``.geoparquet``.
     """
 
     def handle_output(self, context: dg.OutputContext, obj: gpd.GeoDataFrame) -> None:
